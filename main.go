@@ -3,9 +3,16 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
+	"strings"
 
 	"github.com/Piitschy/twaskwarrior-tui/internal/tw"
+	"github.com/Piitschy/twaskwarrior-tui/internal/utils"
+	"github.com/Piitschy/twaskwarrior-tui/keymap"
 	"github.com/Piitschy/twaskwarrior-tui/views"
+	"github.com/charmbracelet/bubbles/help"
+	"github.com/charmbracelet/bubbles/key"
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -18,14 +25,26 @@ const (
 )
 
 type MainModel struct {
-	state     sessionState
-	tasktable tea.Model
+	state         sessionState
+	tasktable     tea.Model
+	activeCommand bool
+	commandline   textinput.Model
+	help          help.Model
 }
 
 func InitModel(tw *tw.TaskWarrior, columns []string) MainModel {
 	tasktableView := views.InitTasktableView(tw, columns)
+	cl := textinput.New()
+	cl.Placeholder = "Enter taskwarrior command here..."
+	suggestions := utils.ProjectSuggestions(utils.Suggestions, tw.GetProjects())
+	cl.ShowSuggestions = true
+	cl.SetSuggestions(suggestions)
+	cl.Prompt = ":task> "
 	return MainModel{
-		tasktable: tasktableView,
+		tasktable:     tasktableView,
+		activeCommand: false,
+		commandline:   cl,
+		help:          help.New(),
 	}
 }
 
@@ -35,12 +54,50 @@ func (m MainModel) Init() tea.Cmd {
 
 func (m MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
+	if m.activeCommand {
+		switch msg := msg.(type) {
+		case tea.KeyMsg:
+			switch {
+			case key.Matches(msg, keymap.KeyMap.Quit):
+				m.commandline.Blur()
+				m.activeCommand = false
+			// case msg.String() == "tab":
+			// 	m.commandline
+			case msg.String() == "enter":
+				command := strings.Split(m.commandline.Value(), " ")
+				exec.Command("task", command...).Run()
+				m.commandline.Blur()
+				m.activeCommand = false
+				m.commandline.SetValue("")
+			}
+		}
+		m.commandline, cmd = m.commandline.Update(msg)
+		return m, cmd
+	}
+
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch {
+		case key.Matches(msg, keymap.KeyMap.Command):
+			m.activeCommand = !m.activeCommand
+			m.commandline.Focus()
+		case key.Matches(msg, keymap.KeyMap.Help):
+			m.help.ShowAll = !m.help.ShowAll
+		}
+	}
 	m.tasktable, cmd = m.tasktable.Update(msg)
 	return m, cmd
 }
 
 func (m MainModel) View() string {
-	return m.tasktable.View()
+	helpView := m.help.View(keymap.KeyMap)
+	return fmt.Sprintf(
+		"%s\n%s\n\n%s",
+		m.tasktable.View(),
+		helpView,
+		m.commandline.View(),
+	)
+
 }
 
 func main() {

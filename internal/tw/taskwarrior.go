@@ -3,6 +3,7 @@ package tw
 import (
 	"encoding/json"
 	"os/exec"
+	"slices"
 	"strconv"
 )
 
@@ -50,6 +51,16 @@ func (tw *TaskWarrior) RemoveFilter(f Filter) {
 		}
 	}
 	tw.filter = newFilters
+}
+
+func (tw *TaskWarrior) GetProjects() []string {
+	projects := []string{}
+	for _, task := range tw.Tasks {
+		if task.Project != "" && !slices.Contains(projects, task.Project) {
+			projects = append(projects, task.Project)
+		}
+	}
+	return projects
 }
 
 func (tw *TaskWarrior) GetTaskById(id int) (*Task, error) {
