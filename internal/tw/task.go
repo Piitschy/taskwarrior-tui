@@ -1,6 +1,11 @@
 package tw
 
-import "reflect"
+import (
+	"reflect"
+	"strings"
+
+	"github.com/fatih/structs"
+)
 
 type Task struct {
 	Id          int     `json:"id"`
@@ -44,6 +49,18 @@ func (t Tasks) Format(fields ...string) [][]string {
 	return rows
 }
 
+func (t Tasks) Filter(f Filter) Tasks {
+	var tasks Tasks
+	for _, task := range t {
+		for key, value := range structs.Map(task) {
+			if l(key) == l(f.key) && l(value.(string)) == l(f.value) {
+				tasks = append(tasks, task)
+			}
+		}
+	}
+	return tasks
+}
+
 func (t Tasks) FilterByProject(project string) Tasks {
 	var tasks Tasks
 	for _, task := range t {
@@ -74,4 +91,8 @@ func (t Tasks) FilterCompleted() Tasks {
 
 func (t Tasks) FilterDeleted() Tasks {
 	return t.FilterByStatus("deleted")
+}
+
+func l(s string) string {
+	return strings.ToLower(s)
 }

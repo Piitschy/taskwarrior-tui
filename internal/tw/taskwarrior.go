@@ -9,6 +9,7 @@ import (
 type TaskWarrior struct {
 	Tasks
 	Context string
+	filter  Filters
 }
 
 func NewTaskWarrior() (*TaskWarrior, error) {
@@ -27,6 +28,48 @@ func (tw *TaskWarrior) LoadTasks() error {
 	}
 	err = json.Unmarshal([]byte(tasksString), &tw.Tasks)
 	return nil
+}
+
+func (tw *TaskWarrior) GetFilters() Filters {
+	return tw.filter
+}
+
+func (tw *TaskWarrior) AddFilter(key, value string) {
+	tw.filter.AddFilter(key, value)
+}
+
+func (tw *TaskWarrior) AddFilterFromString(filterString string) {
+	tw.filter.AddFilterFromString(filterString)
+}
+
+func (tw *TaskWarrior) RemoveFilter(f Filter) {
+	var newFilters Filters
+	for i, filter := range tw.filter {
+		if filter.key != f.key || filter.value != f.value {
+			newFilters = append(newFilters, tw.filter[i])
+		}
+	}
+	tw.filter = newFilters
+}
+
+func (tw *TaskWarrior) GetTaskById(id int) (*Task, error) {
+	for _, task := range tw.Tasks {
+		if task.Id == id {
+			return &task, nil
+		}
+	}
+	return nil, nil
+}
+
+func (tw *TaskWarrior) GetFilteredTasks() Tasks {
+	tasks := tw.Tasks
+	if len(tasks) == 0 {
+		return tasks
+	}
+	for _, filter := range tw.filter {
+		tasks = tasks.Filter(filter)
+	}
+	return tasks
 }
 
 func (tw *TaskWarrior) GetActiveTasks() (Tasks, error) {
@@ -53,6 +96,11 @@ func (tw *TaskWarrior) TaskDone(taskId int) error {
 		return err
 	}
 	return nil
+}
+
+func (tw *TaskWarrior) Undo() error {
+	_, err := exec.Command("task", "rc.confirmation=off", "undo").Output()
+	return err
 }
 
 func (tw *TaskWarrior) StartTask(taskId int) error {

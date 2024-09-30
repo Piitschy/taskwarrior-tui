@@ -1,4 +1,4 @@
-package main
+package tasktable
 
 import (
 	"reflect"
@@ -7,53 +7,55 @@ import (
 
 	"github.com/Piitschy/twaskwarrior-tui/internal/tw"
 	"github.com/Piitschy/twaskwarrior-tui/internal/utils"
+	"github.com/Piitschy/twaskwarrior-tui/keymap"
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
 )
 
-type model struct {
+type Model struct {
 	table   table.Table
 	columns []string
 	tw      *tw.TaskWarrior
 	cursor  int
 }
 
-func InitModel(tw *tw.TaskWarrior, columns []string) model {
+func InitModel(tw *tw.TaskWarrior, columns []string) Model {
 	t := table.New().
 		Border(lipgloss.NormalBorder()).
 		BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("99"))).
 		BorderTop(true).BorderBottom(true).BorderLeft(true).BorderRight(true).BorderColumn(false).
 		Headers(utils.SpaceAround(columns)...)
-	m := model{tw: tw, table: *t, cursor: 0, columns: columns}
+	m := Model{tw: tw, table: *t, cursor: 0, columns: columns}
 	rows := m.getRows()
 	m.table.Rows(rows...)
 	return m
 }
 
-func (m model) Init() tea.Cmd { return nil }
+func (m Model) Init() tea.Cmd { return nil }
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.String() {
+		switch {
 
-		case "j", "down":
-			if m.cursor < len(m.tw.Tasks)-1 {
+		case key.Matches(msg, keymap.KeyMap.Down):
+			if m.cursor < len(m.tw.GetFilteredTasks())-1 {
 				m.cursor++
 			}
 
-		case "k", "up":
+		case key.Matches(msg, keymap.KeyMap.Up):
 			if m.cursor > 0 {
 				m.cursor--
 			}
 
-		case "q", "ctrl+c":
+		case key.Matches(msg, keymap.KeyMap.Quit):
 			return m, tea.Quit
 
-		case " ":
-			taskId := m.tw.Tasks[m.cursor].Id
+		case key.Matches(msg, keymap.KeyMap.Space):
+			taskId := m.tw.GetFilteredTasks()[m.cursor].Id
 			activeTasks, _ := m.tw.GetActiveTasks()
 			if activeTasks.Contains(taskId) {
 				m.tw.StopTask(taskId)
@@ -61,9 +63,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.tw.StartTask(taskId)
 			}
 
-		case "d":
-			taskId := m.tw.Tasks[m.cursor].Id
+		case key.Matches(msg, keymap.KeyMap.Done):
+			taskId := m.tw.GetFilteredTasks()[m.cursor].Id
 			m.tw.TaskDone(taskId)
+
+		case key.Matches(msg, keymap.KeyMap.Undo):
+			m.tw.Undo()
+
 		}
 	}
 	m.tw.LoadTasks()
@@ -72,10 +78,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m model) View() string {
+func (m Model) View() string {
 	activeTasks, _ := m.tw.GetActiveTasks()
 	activeRows := []int{}
-	for i, task := range m.tw.Tasks {
+	for i, task := range m.tw.GetFilteredTasks() {
 		if activeTasks.Contains(task.Id) {
 			activeRows = append(activeRows, i+1)
 		}
@@ -96,8 +102,8 @@ func (m model) View() string {
 	return m.table.Render()
 }
 
-func (m model) getRows() [][]string {
-	tasks := m.tw.Tasks
+func (m Model) getRows() [][]string {
+	tasks := m.tw.GetFilteredTasks()
 	rows := make([][]string, len(tasks))
 	for i, task := range tasks {
 		r := reflect.ValueOf(task)
