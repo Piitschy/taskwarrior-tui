@@ -36,6 +36,14 @@ func (t *Tasks) Contains(id int) bool {
 	return false
 }
 
+func (t Tasks) GetIds() []int {
+	ids := make([]int, len(t))
+	for i, task := range t {
+		ids[i] = task.Id
+	}
+	return ids
+}
+
 func (t Tasks) Format(fields ...string) [][]string {
 	rows := make([][]string, len(t))
 	r := reflect.ValueOf(t)
@@ -91,6 +99,23 @@ func (t Tasks) FilterCompleted() Tasks {
 
 func (t Tasks) FilterDeleted() Tasks {
 	return t.FilterByStatus("deleted")
+}
+
+func (t Tasks) SortIdsFirst(ids ...int) Tasks {
+	var tasks Tasks
+	for _, id := range ids {
+		for _, task := range t {
+			if task.Id == id {
+				tasks = append(tasks, task)
+			}
+		}
+	}
+	for _, task := range t {
+		if !tasks.Contains(task.Id) {
+			tasks = append(tasks, task)
+		}
+	}
+	return tasks
 }
 
 func l(s string) string {

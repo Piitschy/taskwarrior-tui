@@ -4,10 +4,12 @@ import (
 	"github.com/Piitschy/twaskwarrior-tui/components/activefilters"
 	"github.com/Piitschy/twaskwarrior-tui/components/tasktable"
 	"github.com/Piitschy/twaskwarrior-tui/internal/tw"
+	"github.com/Piitschy/twaskwarrior-tui/internal/utils"
 	"github.com/Piitschy/twaskwarrior-tui/keymap"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type sessionState int
@@ -26,12 +28,22 @@ type TasktableView struct {
 	filterList  tea.Model
 }
 
+var baseStyle = lipgloss.NewStyle().
+	BorderStyle(lipgloss.NormalBorder()).
+	BorderForeground(lipgloss.Color("56"))
+
+var inactiveStyle = lipgloss.NewStyle().
+	BorderStyle(lipgloss.NormalBorder()).
+	BorderForeground(lipgloss.Color("24"))
+
 func InitTasktableView(tw *tw.TaskWarrior, columns []string) TasktableView {
 	// table
 	tasktable := tasktable.InitModel(tw, columns)
 	// filter
 	filterInput := textinput.New()
 	filterInput.Placeholder = "add filter like: 'project:work'"
+	filterInput.ShowSuggestions = true
+	filterInput.SetSuggestions(utils.ProjectSuggestions(tw.GetProjects()))
 	// help
 	return TasktableView{
 		state:       none,
@@ -57,12 +69,13 @@ func (m TasktableView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case msg.String() == "esc" || key.Matches(msg, keymap.KeyMap.Filter):
 				m.filterInput.Blur()
 				m.state = none
+				utils.BlockCommentLine = false
 			case msg.String() == "enter":
 				m.tw.AddFilterFromString(m.filterInput.Value())
 				m.filterInput.Blur()
 				m.filterInput.SetValue("")
 				m.state = none
-
+				utils.BlockCommentLine = false
 			}
 		}
 		return m, cmd
@@ -73,6 +86,7 @@ func (m TasktableView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch {
 			case key.Matches(msg, keymap.KeyMap.Quit):
 				m.state = none
+				utils.BlockCommentLine = false
 			}
 		}
 		return m, cmd
@@ -84,6 +98,7 @@ func (m TasktableView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, keymap.KeyMap.Filter):
 			m.state = showNewFilter
 			m.filterInput.Focus()
+			utils.BlockCommentLine = true
 		case key.Matches(msg, keymap.KeyMap.ActiveFilters):
 			m.state = showFilters
 		}
@@ -93,12 +108,11 @@ func (m TasktableView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m TasktableView) View() string {
 	tasktableView := m.tasktable.View()
-	var filterView string
-	switch m.state {
-	case showNewFilter:
-		filterView = m.filterInput.View()
-	case showFilters:
-		filterView = m.filterList.View()
+	filterView := ""
+	if m.state == none {
+		filterView += inactiveStyle.Render(m.filterList.View() + "\n\n" + m.filterInput.View())
+	} else {
+		filterView += baseStyle.Render(m.filterList.View() + "\n\n" + m.filterInput.View())
 	}
 	return tasktableView + "\n" + filterView
 }

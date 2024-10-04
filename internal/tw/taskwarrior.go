@@ -93,6 +93,16 @@ func (tw *TaskWarrior) GetActiveTasks() (Tasks, error) {
 	return tasks, nil
 }
 
+func (tw *TaskWarrior) GetNextTasks() (Tasks, error) {
+	tasks := Tasks{}
+	tasksString, err := exec.Command("task", "+next", "export").Output()
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal([]byte(tasksString), &tasks)
+	return tasks, nil
+}
+
 func (tw *TaskWarrior) EditTask(taskId int) error {
 	_, err := exec.Command("task", strconv.Itoa(taskId), "edit").Output()
 	if err != nil {

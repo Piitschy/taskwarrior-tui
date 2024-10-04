@@ -19,6 +19,7 @@ type Model struct {
 	columns []string
 	tw      *tw.TaskWarrior
 	cursor  int
+	width   int
 }
 
 func InitModel(tw *tw.TaskWarrior, columns []string) Model {
@@ -35,9 +36,32 @@ func InitModel(tw *tw.TaskWarrior, columns []string) Model {
 
 func (m Model) Init() tea.Cmd { return nil }
 
+func autoSpace(cols []string, width int, expandingCol int) []string {
+	result := make([]string, len(cols))
+	var totalWidth int
+	for i, col := range cols {
+		result[i] = " " + col + " "
+		totalWidth += len(result[i])
+	}
+	if totalWidth >= width {
+		return result
+	}
+	space := ""
+	for i := 0; i < width-totalWidth-2; i++ {
+		space += " "
+	}
+	result[expandingCol] = " " + cols[expandingCol] + space
+	return result
+}
+
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.table.
+			Width(m.width).
+			Headers(autoSpace(m.columns, m.width, 2)...)
 	case tea.KeyMsg:
 		switch {
 
@@ -80,20 +104,27 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m Model) View() string {
 	activeTasks, _ := m.tw.GetActiveTasks()
+	nextTasks, _ := m.tw.GetNextTasks()
 	activeRows := []int{}
+	nextRows := []int{}
 	for i, task := range m.tw.GetFilteredTasks() {
 		if activeTasks.Contains(task.Id) {
 			activeRows = append(activeRows, i+1)
+		}
+		if nextTasks.Contains(task.Id) {
+			nextRows = append(nextRows, i+1)
 		}
 	}
 	m.table.StyleFunc(func(row, col int) lipgloss.Style {
 		switch {
 		case row == 0:
 			return HeaderStyle
-		case slices.Contains(activeRows, row):
-			return ActiveRowStyle
 		case row == m.cursor+1:
 			return SelectedRowStyle
+		case slices.Contains(activeRows, row):
+			return ActiveRowStyle
+		case slices.Contains(nextRows, row):
+			return NextRowStyle
 		default:
 			return RowStyle
 		}

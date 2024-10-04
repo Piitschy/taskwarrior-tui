@@ -13,7 +13,7 @@ type model struct {
 }
 
 func InitModel(tw *tw.TaskWarrior) model {
-	return model{tw: tw, cursor: 0}
+	return model{tw: tw, cursor: -1}
 }
 
 func (m model) Init() tea.Cmd {
@@ -42,14 +42,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	s := "Active Filters:\n"
+	s := ""
+	if len(m.tw.GetFilters()) == 0 {
+		return "No active filters"
+	}
 	for i, filter := range m.tw.GetFilters() {
 		if i == m.cursor {
-			s += " > "
+			s += SelectedRowStyle.Render("- " + filter.String())
 		} else {
-			s += "   "
+			s += RowStyle.Render("- " + filter.String())
 		}
-		s += filter.String() + "\n"
 	}
 	return s
 }

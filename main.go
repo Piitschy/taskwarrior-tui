@@ -14,6 +14,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type sessionState int
@@ -30,21 +31,26 @@ type MainModel struct {
 	activeCommand bool
 	commandline   textinput.Model
 	help          help.Model
+	width         int
+	height        int
 }
 
 func InitModel(tw *tw.TaskWarrior, columns []string) MainModel {
 	tasktableView := views.InitTasktableView(tw, columns)
 	cl := textinput.New()
 	cl.Placeholder = "Enter taskwarrior command here..."
-	suggestions := utils.ProjectSuggestions(utils.Suggestions, tw.GetProjects())
+	suggestions := utils.AddProjectSuggestions(utils.Suggestions, tw.GetProjects())
 	cl.ShowSuggestions = true
 	cl.SetSuggestions(suggestions)
 	cl.Prompt = ":task> "
+	help := help.New()
+	help.Width = 500
 	return MainModel{
 		tasktable:     tasktableView,
 		activeCommand: false,
 		commandline:   cl,
-		help:          help.New(),
+		help:          help,
+		width:         500,
 	}
 }
 
@@ -54,9 +60,12 @@ func (m MainModel) Init() tea.Cmd {
 
 func (m MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
-	if m.activeCommand {
-		switch msg := msg.(type) {
-		case tea.KeyMsg:
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
+	case tea.KeyMsg:
+		if m.activeCommand {
 			switch {
 			case key.Matches(msg, keymap.KeyMap.Quit):
 				m.commandline.Blur()
@@ -70,34 +79,40 @@ func (m MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.activeCommand = false
 				m.commandline.SetValue("")
 			}
+			m.commandline, cmd = m.commandline.Update(msg)
+			return m, cmd
 		}
-		m.commandline, cmd = m.commandline.Update(msg)
-		return m, cmd
 	}
 
+	m.tasktable, cmd = m.tasktable.Update(msg)
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
-		case key.Matches(msg, keymap.KeyMap.Command):
+		case key.Matches(msg, keymap.KeyMap.Command) && !utils.BlockCommentLine:
 			m.activeCommand = !m.activeCommand
 			m.commandline.Focus()
 		case key.Matches(msg, keymap.KeyMap.Help):
 			m.help.ShowAll = !m.help.ShowAll
 		}
 	}
-	m.tasktable, cmd = m.tasktable.Update(msg)
 	return m, cmd
 }
 
 func (m MainModel) View() string {
 	helpView := m.help.View(keymap.KeyMap)
-	return fmt.Sprintf(
-		"%s\n%s\n\n%s",
+	view := fmt.Sprintf(
+		"\n\n%s\n%s",
 		m.tasktable.View(),
 		helpView,
-		m.commandline.View(),
 	)
 
+	return lipgloss.Place(
+		m.width,
+		m.height,
+		lipgloss.Center,
+		lipgloss.Top,
+		view,
+	) + "\n\n" + m.commandline.View()
 }
 
 func main() {
@@ -111,9 +126,7 @@ func main() {
 	columns := []string{"ID", "Project", "Description", "Status"}
 
 	m := InitModel(tw, columns)
-	p := tea.NewProgram(m)
-	p.EnterAltScreen()
-	if _, err := p.Run(); err != nil {
+	if _, err := tea.NewProgram(m, tea.WithAltScreen()).Run(); err != nil {
 		fmt.Println("Error running program:", err)
 		os.Exit(1)
 	}
