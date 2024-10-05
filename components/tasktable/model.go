@@ -15,11 +15,14 @@ import (
 )
 
 type Model struct {
-	table   table.Table
-	columns []string
-	tw      *tw.TaskWarrior
-	cursor  int
-	width   int
+	table      table.Table
+	columns    []string
+	rows       [][]string
+	activeRows []int
+	nextRows   []int
+	tw         *tw.TaskWarrior
+	cursor     int
+	width      int
 }
 
 func InitModel(tw *tw.TaskWarrior, columns []string) Model {
@@ -97,33 +100,34 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 	m.tw.LoadTasks()
-	sd := table.NewStringData(m.getRows()...)
+	activeTasks, _ := m.tw.GetActiveTasks()
+	nextTasks, _ := m.tw.GetNextTasks()
+	m.activeRows = []int{}
+	m.nextRows = []int{}
+	for i, task := range m.tw.GetFilteredTasks() {
+		if activeTasks.Contains(task.Id) {
+			m.activeRows = append(m.activeRows, i+1)
+		}
+		if nextTasks.Contains(task.Id) {
+			m.nextRows = append(m.nextRows, i+1)
+		}
+	}
+	m.rows = m.getRows()
+	sd := table.NewStringData(m.rows...)
 	m.table.Data(sd)
 	return m, cmd
 }
 
 func (m Model) View() string {
-	activeTasks, _ := m.tw.GetActiveTasks()
-	nextTasks, _ := m.tw.GetNextTasks()
-	activeRows := []int{}
-	nextRows := []int{}
-	for i, task := range m.tw.GetFilteredTasks() {
-		if activeTasks.Contains(task.Id) {
-			activeRows = append(activeRows, i+1)
-		}
-		if nextTasks.Contains(task.Id) {
-			nextRows = append(nextRows, i+1)
-		}
-	}
 	m.table.StyleFunc(func(row, col int) lipgloss.Style {
 		switch {
 		case row == 0:
 			return HeaderStyle
 		case row == m.cursor+1:
 			return SelectedRowStyle
-		case slices.Contains(activeRows, row):
+		case slices.Contains(m.activeRows, row):
 			return ActiveRowStyle
-		case slices.Contains(nextRows, row):
+		case slices.Contains(m.nextRows, row):
 			return NextRowStyle
 		default:
 			return RowStyle
@@ -134,7 +138,7 @@ func (m Model) View() string {
 }
 
 func (m Model) getRows() [][]string {
-	tasks := m.tw.GetFilteredTasks()
+	tasks := m.tw.GetFilteredTasks() // TODO: sort tasks
 	rows := make([][]string, len(tasks))
 	for i, task := range tasks {
 		r := reflect.ValueOf(task)

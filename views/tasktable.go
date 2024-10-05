@@ -84,6 +84,10 @@ func (m TasktableView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg := msg.(type) {
 		case tea.KeyMsg:
 			switch {
+			case key.Matches(msg, keymap.KeyMap.Filter):
+				m.state = showNewFilter
+				m.filterInput.Focus()
+				utils.BlockCommentLine = true
 			case key.Matches(msg, keymap.KeyMap.Quit):
 				m.state = none
 				utils.BlockCommentLine = false

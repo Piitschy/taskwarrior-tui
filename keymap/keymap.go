@@ -12,6 +12,7 @@ type keyMap struct {
 	Done          key.Binding
 	Undo          key.Binding
 	Delete        key.Binding
+	Search        key.Binding
 	Filter        key.Binding
 	ActiveFilters key.Binding
 	Help          key.Binding
@@ -68,16 +69,20 @@ var KeyMap = keyMap{
 		key.WithKeys("?"),
 		key.WithHelp("?", "toggle help"),
 	),
-	Filter: key.NewBinding(
+	Search: key.NewBinding(
 		key.WithKeys("/"),
-		key.WithHelp("/", "filter tasks"),
+		key.WithHelp("/", "search tasks"),
+	),
+	Filter: key.NewBinding(
+		key.WithKeys("F"),
+		key.WithHelp("F", "filter tasks"),
 	),
 	ActiveFilters: key.NewBinding(
 		key.WithKeys("f"),
-		key.WithHelp("f", "show active filters"),
+		key.WithHelp("f", "edit active filters"),
 	),
 	Quit: key.NewBinding(
 		key.WithKeys("q", "esc", "ctrl+c"),
-		key.WithHelp("q", "quit"),
+		key.WithHelp("esc/q", "quit"),
 	),
 }

@@ -13,7 +13,7 @@ type model struct {
 }
 
 func InitModel(tw *tw.TaskWarrior) model {
-	return model{tw: tw, cursor: -1}
+	return model{tw: tw, cursor: 0}
 }
 
 func (m model) Init() tea.Cmd {
@@ -52,6 +52,7 @@ func (m model) View() string {
 		} else {
 			s += RowStyle.Render("- " + filter.String())
 		}
+		s += "\n"
 	}
 	return s
 }
