@@ -101,12 +101,14 @@ func (m MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m MainModel) View() string {
 	helpView := m.help.View(keymap.KeyMap)
 	view := fmt.Sprintf(
-		"\n\n%s\n%s",
+		"%s\n%s",
 		m.tasktable.View(),
 		helpView,
 	)
 
-	return lipgloss.Place(
+	return view + "\n\n" + m.commandline.View()
+
+	return "\n\n" + lipgloss.Place(
 		m.width,
 		m.height,
 		lipgloss.Center,
