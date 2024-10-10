@@ -97,6 +97,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, keymap.KeyMap.Undo):
 			m.tw.Undo()
 
+		case key.Matches(msg, keymap.KeyMap.Next):
+			taskId := m.tw.GetFilteredTasks()[m.cursor].Id
+			m.tw.TaskNext(taskId)
 		}
 	}
 	m.tw.LoadTasks()

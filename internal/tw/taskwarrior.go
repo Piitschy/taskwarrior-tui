@@ -22,6 +22,19 @@ func NewTaskWarrior() (*TaskWarrior, error) {
 	return &tw, nil
 }
 
+func (tw *TaskWarrior) GetTasks() Tasks {
+	tasks, err := tw.GetNextTasks()
+	if err != nil {
+		return tw.Tasks
+	}
+	for _, task := range tw.Tasks {
+		if !tasks.Contains(task.Id) {
+			tasks = append(tasks, task)
+		}
+	}
+	return tasks
+}
+
 func (tw *TaskWarrior) LoadTasks() error {
 	tasksString, err := exec.Command("task", "export").Output()
 	if err != nil {
@@ -73,7 +86,7 @@ func (tw *TaskWarrior) GetTaskById(id int) (*Task, error) {
 }
 
 func (tw *TaskWarrior) GetFilteredTasks() Tasks {
-	tasks := tw.Tasks
+	tasks := tw.GetTasks()
 	if len(tasks) == 0 {
 		return tasks
 	}
