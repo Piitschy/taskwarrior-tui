@@ -41,6 +41,7 @@ func InitModel(tw *tw.TaskWarrior, columns []string) MainModel {
 	cl.Placeholder = "Enter taskwarrior command here..."
 	suggestions := utils.AddProjectSuggestions(utils.Suggestions, tw.GetProjects())
 	cl.ShowSuggestions = true
+	cl.KeyMap.AcceptSuggestion = keymap.KeyMap.AcceptSuggestion
 	cl.SetSuggestions(suggestions)
 	cl.Prompt = ":task> "
 	help := help.New()
@@ -67,7 +68,7 @@ func (m MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		if m.activeCommand {
 			switch {
-			case key.Matches(msg, keymap.KeyMap.Quit):
+			case key.Matches(msg, key.NewBinding(key.WithKeys("esc"))):
 				m.commandline.Blur()
 				m.activeCommand = false
 			// case msg.String() == "tab":

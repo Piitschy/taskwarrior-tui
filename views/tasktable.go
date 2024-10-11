@@ -44,6 +44,7 @@ func InitTasktableView(tw *tw.TaskWarrior, columns []string) TasktableView {
 	filterInput := textinput.New()
 	filterInput.Placeholder = "add filter like: 'project:work'"
 	filterInput.ShowSuggestions = true
+	filterInput.KeyMap.AcceptSuggestion = keymap.KeyMap.AcceptSuggestion
 	filterInput.SetSuggestions(utils.ProjectSuggestions(tw.GetProjects()))
 	// help
 	return TasktableView{
