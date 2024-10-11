@@ -1,4 +1,4 @@
-# taskworrior-tui
+# taskwarrior-tui
 
 Another Taskwarrior TUI written in Go with Bubble Tea.
 It's heavily inspired by [taskwarrior-tui](https://github.com/kdheepak/taskwarrior-tui) by [kdheepak](https://github.com/kdheepak), but more lightweight and with a different goal.
