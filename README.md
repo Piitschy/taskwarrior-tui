@@ -4,8 +4,9 @@ Another Taskwarrior TUI written in Go with Bubble Tea.
 It's heavily inspired by [taskwarrior-tui](https://github.com/kdheepak/taskwarrior-tui) by [kdheepak](https://github.com/kdheepak), but more lightweight and with a different goal.
 
 ## Features
+- vim-like navigation
 - Display tasks
-- Mark tasks as done
+- Mark tasks as done (status: completed)
 - Mark tasks as next
 - Start/Stop tasks
 - Undo the last action
@@ -16,6 +17,8 @@ It's heavily inspired by [taskwarrior-tui](https://github.com/kdheepak/taskwarri
 - Project switching
 - Tag management
 - Task editing
+
+![](https://github.com/Piitschy/taskwarrior-tui/blob/main/docs/assets/taskwarrior-tui.gif)
 
 ## Installation
 
