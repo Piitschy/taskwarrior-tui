@@ -19,9 +19,17 @@ It's heavily inspired by [taskwarrior-tui](https://github.com/kdheepak/taskwarri
 
 ## Installation
 
+It is necessary to have taskwarrior installed on your system. If not, you can download it [here](https://taskwarrior.org/download/).
+
+### Go
+Make sure you have Go installed on your system. If not, you can download it [here](https://golang.org/dl/).
+
 ```sh 
 go install github.com/Piitschy/taskwarrior-tui@latest
 ```
+
+### Executable for Linux, MacOS and Windows
+Or just use the executable from the [releases](https://github.com/Piitschy/taskwarrior-tui/releases).
 
 ## Usage
 
