@@ -154,7 +154,15 @@ func (tw *TaskWarrior) StopTask(taskId int) error {
 }
 
 func (tw *TaskWarrior) TaskNext(taskId int) error {
-	_, err := exec.Command("task", strconv.Itoa(taskId), "modify +next").Output()
+	_, err := exec.Command("task", strconv.Itoa(taskId), "modify", "+next").Output()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (tw *TaskWarrior) TaskUnnext(taskId int) error {
+	_, err := exec.Command("task", strconv.Itoa(taskId), "modify", "-next").Output()
 	if err != nil {
 		return err
 	}

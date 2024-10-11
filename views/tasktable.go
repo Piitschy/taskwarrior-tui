@@ -26,6 +26,7 @@ type TasktableView struct {
 	state       sessionState
 	filterInput textinput.Model
 	filterList  tea.Model
+	width       int
 }
 
 var baseStyle = lipgloss.NewStyle().
@@ -60,6 +61,7 @@ func (m TasktableView) Init() tea.Cmd {
 
 func (m TasktableView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
+
 	switch {
 	case m.state == showNewFilter:
 		m.filterInput, cmd = m.filterInput.Update(msg)
@@ -88,7 +90,7 @@ func (m TasktableView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.state = showNewFilter
 				m.filterInput.Focus()
 				utils.BlockCommentLine = true
-			case key.Matches(msg, keymap.KeyMap.Quit):
+			case key.Matches(msg, keymap.KeyMap.Quit) || key.Matches(msg, keymap.KeyMap.Up) || key.Matches(msg, keymap.KeyMap.Down):
 				m.state = none
 				utils.BlockCommentLine = false
 			}
@@ -97,13 +99,15 @@ func (m TasktableView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 	m.tasktable, cmd = m.tasktable.Update(msg)
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, keymap.KeyMap.Filter):
 			m.state = showNewFilter
 			m.filterInput.Focus()
 			utils.BlockCommentLine = true
-		case key.Matches(msg, keymap.KeyMap.ActiveFilters):
+		case key.Matches(msg, keymap.KeyMap.Left) || key.Matches(msg, keymap.KeyMap.Right):
 			m.state = showFilters
 		}
 	}
@@ -114,9 +118,9 @@ func (m TasktableView) View() string {
 	tasktableView := m.tasktable.View()
 	filterView := ""
 	if m.state == none {
-		filterView += inactiveStyle.Render(m.filterList.View() + "\n\n" + m.filterInput.View())
+		filterView += inactiveStyle.Width(m.width - 2).Render(m.filterList.View() + "\n\n" + m.filterInput.View())
 	} else {
-		filterView += baseStyle.Render(m.filterList.View() + "\n\n" + m.filterInput.View())
+		filterView += baseStyle.Width(m.width - 2).Render(m.filterList.View() + "\n\n" + m.filterInput.View())
 	}
 	return tasktableView + "\n" + filterView
 }

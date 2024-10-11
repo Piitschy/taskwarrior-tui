@@ -66,11 +66,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			Width(m.width).
 			Headers(autoSpace(m.columns, m.width, 2)...)
 	case tea.KeyMsg:
+		var err error = nil
 		switch {
 
 		case key.Matches(msg, keymap.KeyMap.Down):
 			if m.cursor < len(m.tw.GetFilteredTasks())-1 {
 				m.cursor++
+			} else {
+				m.cursor = 0
 			}
 
 		case key.Matches(msg, keymap.KeyMap.Up):
@@ -85,21 +88,32 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			taskId := m.tw.GetFilteredTasks()[m.cursor].Id
 			activeTasks, _ := m.tw.GetActiveTasks()
 			if activeTasks.Contains(taskId) {
-				m.tw.StopTask(taskId)
+				err = m.tw.StopTask(taskId)
 			} else {
-				m.tw.StartTask(taskId)
+				err = m.tw.StartTask(taskId)
 			}
 
 		case key.Matches(msg, keymap.KeyMap.Done):
 			taskId := m.tw.GetFilteredTasks()[m.cursor].Id
-			m.tw.TaskDone(taskId)
+			err = m.tw.TaskDone(taskId)
 
 		case key.Matches(msg, keymap.KeyMap.Undo):
-			m.tw.Undo()
+			err = m.tw.Undo()
 
 		case key.Matches(msg, keymap.KeyMap.Next):
 			taskId := m.tw.GetFilteredTasks()[m.cursor].Id
-			m.tw.TaskNext(taskId)
+			nextTasks, nErr := m.tw.GetNextTasks()
+			if nErr != nil {
+				err = nErr
+			}
+			if nextTasks.Contains(taskId) {
+				err = m.tw.TaskUnnext(taskId)
+			} else {
+				err = m.tw.TaskNext(taskId)
+			}
+		}
+		if err != nil {
+			panic(err)
 		}
 	}
 	m.tw.LoadTasks()

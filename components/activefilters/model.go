@@ -25,11 +25,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
-		case key.Matches(msg, keymap.KeyMap.Down):
+		case key.Matches(msg, keymap.KeyMap.Right):
 			if m.cursor < len(m.tw.GetFilters())-1 {
 				m.cursor++
 			}
-		case key.Matches(msg, keymap.KeyMap.Up):
+		case key.Matches(msg, keymap.KeyMap.Left):
 			if m.cursor > 0 {
 				m.cursor--
 			}
@@ -48,11 +48,12 @@ func (m model) View() string {
 	}
 	for i, filter := range m.tw.GetFilters() {
 		if i == m.cursor {
-			s += SelectedRowStyle.Render("- " + filter.String())
+			s += SelectedRowStyle.Render(filter.String())
 		} else {
-			s += RowStyle.Render("- " + filter.String())
+			s += RowStyle.Render(filter.String())
 		}
-		s += "\n"
+		s += " + "
 	}
+	s = s[:len(s)-3]
 	return s
 }
