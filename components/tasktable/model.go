@@ -79,6 +79,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, keymap.KeyMap.Up):
 			if m.cursor > 0 {
 				m.cursor--
+			} else {
+				m.cursor = len(m.tw.GetFilteredTasks()) - 1
 			}
 
 		case key.Matches(msg, keymap.KeyMap.Quit):
