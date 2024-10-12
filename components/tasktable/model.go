@@ -142,6 +142,10 @@ func (m Model) View() string {
 		switch {
 		case row == 0:
 			return HeaderStyle
+		case slices.Contains(m.activeRows, row) && row == m.cursor+1:
+			return SelectedActiveRowStyle
+		case slices.Contains(m.nextRows, row) && row == m.cursor+1:
+			return SelectedNextRowStyle
 		case row == m.cursor+1:
 			return SelectedRowStyle
 		case slices.Contains(m.activeRows, row):
