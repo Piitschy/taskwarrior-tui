@@ -74,11 +74,13 @@ func (m TasktableView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.state = none
 				utils.BlockCommentLine = false
 			case msg.String() == "enter":
-				m.tw.AddFilterFromString(m.filterInput.Value())
-				m.filterInput.Blur()
-				m.filterInput.SetValue("")
-				m.state = none
-				utils.BlockCommentLine = false
+				err := m.tw.AddFilterFromString(m.filterInput.Value())
+				if err == nil {
+					m.filterInput.Blur()
+					m.filterInput.SetValue("")
+					m.state = none
+					utils.BlockCommentLine = false
+				}
 			}
 		}
 		return m, cmd

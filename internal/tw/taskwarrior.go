@@ -52,8 +52,8 @@ func (tw *TaskWarrior) AddFilter(key, value string) {
 	tw.filter.AddFilter(key, value)
 }
 
-func (tw *TaskWarrior) AddFilterFromString(filterString string) {
-	tw.filter.AddFilterFromString(filterString)
+func (tw *TaskWarrior) AddFilterFromString(filterString string) error {
+	return tw.filter.AddFilterFromString(filterString)
 }
 
 func (tw *TaskWarrior) RemoveFilter(f Filter) {

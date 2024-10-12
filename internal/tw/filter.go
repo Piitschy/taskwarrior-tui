@@ -1,19 +1,28 @@
 package tw
 
-import "strings"
+import (
+	"errors"
+	"strings"
+)
 
 type Filter struct {
 	key   string
 	value string
 }
 
-func NewFilter(key, value string) Filter {
-	return Filter{key, value}
+func NewFilter(key, value string) (Filter, error) {
+	if key == "" {
+		return Filter{}, errors.New("Key cannot be empty")
+	}
+	return Filter{key, value}, nil
 }
 
-func NewFilterFromString(filterString string) Filter {
+func NewFilterFromString(filterString string) (Filter, error) {
 	kv := strings.Split(filterString, ":")
-	return Filter{kv[0], kv[1]}
+	if len(kv) != 2 {
+		return Filter{}, errors.New("Invalid filter string")
+	}
+	return NewFilter(kv[0], kv[1])
 }
 
 func (f Filter) String() string {
@@ -26,12 +35,22 @@ func NewFilters() *Filters {
 	return &Filters{}
 }
 
-func (f *Filters) AddFilter(key, value string) {
-	*f = append(*f, NewFilter(key, value))
+func (f *Filters) AddFilter(key, value string) error {
+	filter, err := NewFilter(key, value)
+	if err != nil {
+		return err
+	}
+	*f = append(*f, filter)
+	return nil
 }
 
-func (f *Filters) AddFilterFromString(filterString string) {
-	*f = append(*f, NewFilterFromString(filterString))
+func (f *Filters) AddFilterFromString(filterString string) error {
+	filter, err := NewFilterFromString(filterString)
+	if err != nil {
+		return err
+	}
+	*f = append(*f, filter)
+	return nil
 }
 
 func (f *Filters) String() string {
