@@ -13,7 +13,6 @@ var SelectedRowStyle = lipgloss.NewStyle().
 	Foreground(lipgloss.Color("#000000")).
 	Background(lipgloss.Color("#FFFFFF"))
 
-// background orange
 var ActiveRowStyle = lipgloss.NewStyle().
 	Background(lipgloss.Color("#FFA500")).
 	Foreground(lipgloss.Color("#FFFFFF"))
@@ -25,6 +24,10 @@ var SelectedActiveRowStyle = lipgloss.NewStyle().
 var NextRowStyle = lipgloss.NewStyle().
 	Foreground(lipgloss.Color("#FFFA00"))
 
+var NextActiveRowStyle = lipgloss.NewStyle().
+	Background(lipgloss.Color("#FFA500")).
+	Foreground(lipgloss.Color("#FFFFD0"))
+
 var SelectedNextRowStyle = lipgloss.NewStyle().
 	Foreground(lipgloss.Color("#000000")).
-	Background(lipgloss.Color("#FFFA50"))
+	Background(lipgloss.Color("#FFFA00"))

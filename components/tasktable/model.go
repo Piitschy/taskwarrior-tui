@@ -148,6 +148,8 @@ func (m Model) View() string {
 			return SelectedNextRowStyle
 		case row == m.cursor+1:
 			return SelectedRowStyle
+		case slices.Contains(m.activeRows, row) && slices.Contains(m.nextRows, row):
+			return NextActiveRowStyle
 		case slices.Contains(m.activeRows, row):
 			return ActiveRowStyle
 		case slices.Contains(m.nextRows, row):
