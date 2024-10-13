@@ -80,7 +80,6 @@ func (m TasktableView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.filterInput.SetValue("")
 					m.state = none
 					utils.BlockCommentLine = false
-					// TODO: write filters to env or file
 				}
 			}
 		}
