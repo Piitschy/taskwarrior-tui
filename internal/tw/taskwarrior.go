@@ -48,6 +48,10 @@ func (tw *TaskWarrior) GetFilters() Filters {
 	return tw.filter
 }
 
+func (tw *TaskWarrior) SetFilter(f Filters) {
+	tw.filter = f
+}
+
 func (tw *TaskWarrior) AddFilter(key, value string) {
 	tw.filter.AddFilter(key, value)
 }

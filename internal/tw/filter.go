@@ -35,6 +35,19 @@ func NewFilters() *Filters {
 	return &Filters{}
 }
 
+func NewFiltersFromString(filterString string) (*Filters, error) {
+	filters := strings.Split(filterString, " and ")
+	var f Filters
+	for _, filter := range filters {
+		filter, err := NewFilterFromString(filter)
+		if err != nil {
+			continue
+		}
+		f = append(f, filter)
+	}
+	return &f, nil
+}
+
 func (f *Filters) AddFilter(key, value string) error {
 	filter, err := NewFilter(key, value)
 	if err != nil {
@@ -53,10 +66,10 @@ func (f *Filters) AddFilterFromString(filterString string) error {
 	return nil
 }
 
-func (f *Filters) String() string {
-	filterStrings := make([]string, len(*f))
-	for _, filter := range *f {
-		filterStrings = append(filterStrings, filter.key+":"+filter.value)
+func (f Filters) String() string {
+	filterStrings := make([]string, len(f))
+	for i, filter := range f {
+		filterStrings[i] = filter.String()
 	}
 	filterString := "(" + filterStrings[0]
 	for _, filter := range filterStrings[1:] {
