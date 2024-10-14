@@ -6,15 +6,16 @@ import (
 )
 
 type Filter struct {
-	key   string
-	value string
+	key      string
+	value    string
+	Disabled bool
 }
 
 func NewFilter(key, value string) (Filter, error) {
 	if key == "" {
 		return Filter{}, errors.New("Key cannot be empty")
 	}
-	return Filter{key, value}, nil
+	return Filter{key, value, false}, nil
 }
 
 func NewFilterFromString(filterString string) (Filter, error) {

@@ -60,6 +60,14 @@ func (tw *TaskWarrior) AddFilterFromString(filterString string) error {
 	return tw.filter.AddFilterFromString(filterString)
 }
 
+func (tw *TaskWarrior) ToggleDisableFilter(f Filter) {
+	for i, filter := range tw.filter {
+		if filter.key == f.key && filter.value == f.value {
+			tw.filter[i].Disabled = !tw.filter[i].Disabled
+		}
+	}
+}
+
 func (tw *TaskWarrior) RemoveFilter(f Filter) {
 	var newFilters Filters
 	for i, filter := range tw.filter {
@@ -95,6 +103,9 @@ func (tw *TaskWarrior) GetFilteredTasks() Tasks {
 		return tasks
 	}
 	for _, filter := range tw.filter {
+		if filter.Disabled {
+			continue
+		}
 		tasks = tasks.Filter(filter)
 	}
 	return tasks

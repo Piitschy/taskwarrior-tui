@@ -33,6 +33,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.cursor > 0 {
 				m.cursor--
 			}
+		case key.Matches(msg, keymap.KeyMap.DisableFilter):
+			selectedFilter := m.tw.GetFilters()[m.cursor]
+			m.tw.ToggleDisableFilter(selectedFilter)
 		case key.Matches(msg, keymap.KeyMap.Delete):
 			selectedFilter := m.tw.GetFilters()[m.cursor]
 			m.tw.RemoveFilter(selectedFilter)
@@ -47,10 +50,18 @@ func (m model) View() string {
 		return "No active filters"
 	}
 	for i, filter := range m.tw.GetFilters() {
-		if i == m.cursor {
-			s += SelectedRowStyle.Render(filter.String())
+		if !filter.Disabled {
+			if i == m.cursor {
+				s += SelectedRowStyle.Render(filter.String())
+			} else {
+				s += RowStyle.Render(filter.String())
+			}
 		} else {
-			s += RowStyle.Render(filter.String())
+			if i == m.cursor {
+				s += SelectedDisabledRowStyle.Render(filter.String())
+			} else {
+				s += DisabledRowStyle.Render(filter.String())
+			}
 		}
 		s += " + "
 	}

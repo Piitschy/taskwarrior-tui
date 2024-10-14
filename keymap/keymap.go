@@ -17,6 +17,7 @@ type keyMap struct {
 	Delete           key.Binding
 	Search           key.Binding
 	Filter           key.Binding
+	DisableFilter    key.Binding
 	AcceptSuggestion key.Binding
 	NextSuggestion   key.Binding
 	PrevSuggestion   key.Binding
@@ -82,6 +83,10 @@ var KeyMap = keyMap{
 	Delete: key.NewBinding(
 		key.WithKeys("d"),
 		key.WithHelp("d", "delete filter"),
+	),
+	DisableFilter: key.NewBinding(
+		key.WithKeys("x"),
+		key.WithHelp("x", "disable filter"),
 	),
 	Help: key.NewBinding(
 		key.WithKeys("?"),
