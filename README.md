@@ -44,6 +44,7 @@ taskwarrior-tui
 
 ### Task Table
 - `:` to open the command prompt that starts with `task ` to execute taskwarrior commands
+- `a` to add a new task
 - `j`/`k` or `↓`/`↑` to navigate the tasks
 - `q` to quit
 - `d` mark task as done
@@ -56,6 +57,7 @@ taskwarrior-tui
 ### Filter Section
 - `h`/`l` or `←`/`→` to navigate the filter
 - `d` to delete filter
+- `x` to disable filter
 - `q`, `j`/`k` or `↓`/`↑` to close the filter section
 
 
