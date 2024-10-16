@@ -10,6 +10,7 @@ type keyMap struct {
 	Left             key.Binding
 	Right            key.Binding
 	Command          key.Binding
+	NewTask          key.Binding
 	Space            key.Binding
 	Done             key.Binding
 	Undo             key.Binding
@@ -67,6 +68,10 @@ var KeyMap = keyMap{
 	Command: key.NewBinding(
 		key.WithKeys(":"),
 		key.WithHelp(":", "enter command"),
+	),
+	NewTask: key.NewBinding(
+		key.WithKeys("a"),
+		key.WithHelp("a", "add new task"),
 	),
 	Done: key.NewBinding(
 		key.WithKeys("d"),

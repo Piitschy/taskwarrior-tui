@@ -28,6 +28,7 @@ const (
 
 type MainModel struct {
 	state         sessionState
+	tw            *tw.TaskWarrior
 	tasktable     tea.Model
 	activeCommand bool
 	commandline   textinput.Model
@@ -49,6 +50,7 @@ func InitModel(tw *tw.TaskWarrior, columns []string, expandedColumn int) MainMod
 	help.Width = 500
 	return MainModel{
 		tasktable:     tasktableView,
+		tw:            tw,
 		activeCommand: false,
 		commandline:   cl,
 		help:          help,
@@ -91,6 +93,17 @@ func (m MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, keymap.KeyMap.Command) && !utils.BlockCommentLine:
+			m.activeCommand = !m.activeCommand
+			m.commandline.Focus()
+		case key.Matches(msg, keymap.KeyMap.NewTask) && !utils.BlockCommentLine:
+			fs := m.tw.GetFilters()
+			val := "add "
+			for _, f := range fs {
+				if f.String() != "status:pending" && !f.Disabled {
+					val += f.String() + " "
+				}
+			}
+			m.commandline.SetValue(val)
 			m.activeCommand = !m.activeCommand
 			m.commandline.Focus()
 		case key.Matches(msg, keymap.KeyMap.Help):
@@ -156,7 +169,9 @@ func main() {
 	expandedColumn := viper.GetInt("expanded-col")
 
 	m := InitModel(tw, columns, expandedColumn)
-	if _, err := tea.NewProgram(m, tea.WithAltScreen()).Run(); err != nil {
+	p := tea.NewProgram(m, tea.WithAltScreen())
+	_, err = p.Run()
+	if err != nil {
 		fmt.Println("Error running program:", err)
 		os.Exit(1)
 	}
