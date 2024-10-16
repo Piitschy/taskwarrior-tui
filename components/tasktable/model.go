@@ -116,7 +116,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 		if err != nil {
-			panic(err)
+			m.cursor = 0
 		}
 	}
 	m.tw.LoadTasks()

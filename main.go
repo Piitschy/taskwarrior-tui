@@ -72,6 +72,7 @@ func (m MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.activeCommand {
 			switch {
 			case key.Matches(msg, key.NewBinding(key.WithKeys("esc"))):
+				m.commandline.SetValue("")
 				m.commandline.Blur()
 				m.activeCommand = false
 			// case msg.String() == "tab":
@@ -99,8 +100,9 @@ func (m MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			fs := m.tw.GetFilters()
 			val := "add "
 			for _, f := range fs {
-				if f.String() != "status:pending" && !f.Disabled {
-					val += f.String() + " "
+				s := f.String()
+				if s != "status:pending" && !f.Disabled && !strings.Contains(s, ".not") {
+					val += s + " "
 				}
 			}
 			m.commandline.SetValue(val)
