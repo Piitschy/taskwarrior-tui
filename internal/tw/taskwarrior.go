@@ -151,6 +151,8 @@ func (tw *TaskWarrior) TaskDone(taskId int) error {
 	if err != nil {
 		return err
 	}
+	task, _ := tw.GetTaskById(taskId)
+	task.Status = "completed"
 	return nil
 }
 
