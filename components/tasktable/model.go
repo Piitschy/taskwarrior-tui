@@ -50,7 +50,7 @@ func autoSpace(cols []string, width int, expandingCol int) []string {
 		return result
 	}
 	space := ""
-	for i := 0; i < width-totalWidth-2; i++ {
+	for i := 0; i < width-totalWidth-10; i++ {
 		space += " "
 	}
 	result[expandingCol] = " " + cols[expandingCol] + space
@@ -64,7 +64,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.table.
 			Width(m.width).
-			Headers(autoSpace(m.columns, m.width, 2)...)
+			Headers(autoSpace(m.columns, m.width, 3)...)
 	case tea.KeyMsg:
 		var err error = nil
 		switch {
@@ -175,7 +175,18 @@ func (m Model) getRows() [][]string {
 				row[i] = strconv.Itoa(task.Id)
 				continue
 			}
-			row[i] = r.FieldByName(fieldname).String()
+			t := r.FieldByName(fieldname).Type().Kind()
+			var s string
+			switch t {
+			case reflect.String:
+				s = r.FieldByName(fieldname).String()
+			case reflect.Slice:
+				for i := 0; i < r.FieldByName(fieldname).Len(); i++ {
+					s += r.FieldByName(fieldname).Index(i).String() + " "
+				}
+			}
+
+			row[i] = s
 		}
 		rows[i] = utils.SpaceAround(row)
 	}

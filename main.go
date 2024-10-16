@@ -14,7 +14,6 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
 
 type sessionState int
@@ -108,14 +107,6 @@ func (m MainModel) View() string {
 	)
 
 	return view + "\n\n" + m.commandline.View()
-
-	return "\n\n" + lipgloss.Place(
-		m.width,
-		m.height,
-		lipgloss.Center,
-		lipgloss.Top,
-		view,
-	) + "\n\n" + m.commandline.View()
 }
 
 func main() {
@@ -126,7 +117,7 @@ func main() {
 
 	tw.AddFilter("status", "pending")
 
-	columns := []string{"ID", "Project", "Description", "Status"}
+	columns := []string{"ID", "Project", "Tags", "Description", "Status"}
 
 	m := InitModel(tw, columns)
 	if _, err := tea.NewProgram(m, tea.WithAltScreen()).Run(); err != nil {
