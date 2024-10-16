@@ -60,6 +60,7 @@ func autoSpace(cols []string, width int, expandedColumn int) []string {
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
+	m.tw.LoadTasks()
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
@@ -119,7 +120,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			panic(err)
 		}
 	}
-	m.tw.LoadTasks()
 	activeTasks, _ := m.tw.GetActiveTasks()
 	nextTasks, _ := m.tw.GetNextTasks()
 	m.activeRows = []int{}
@@ -164,7 +164,7 @@ func (m Model) View() string {
 }
 
 func (m Model) getRows() [][]string {
-	tasks := m.tw.GetFilteredTasks() // TODO: sort tasks
+	tasks := m.tw.GetFilteredTasks()
 	rows := make([][]string, len(tasks))
 	for i, task := range tasks {
 		r := reflect.ValueOf(task)

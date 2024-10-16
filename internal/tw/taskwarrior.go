@@ -180,6 +180,8 @@ func (tw *TaskWarrior) TaskNext(taskId int) error {
 	if err != nil {
 		return err
 	}
+	task, _ := tw.GetTaskById(taskId)
+	task.Tags = append(task.Tags, "next")
 	return nil
 }
 
@@ -188,5 +190,9 @@ func (tw *TaskWarrior) TaskUnnext(taskId int) error {
 	if err != nil {
 		return err
 	}
+	task, _ := tw.GetTaskById(taskId)
+	task.Tags = slices.DeleteFunc(task.Tags, func(tag string) bool {
+		return tag == "next"
+	})
 	return nil
 }
