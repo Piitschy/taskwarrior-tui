@@ -36,7 +36,7 @@ func (k keyMap) ShortHelp() []key.Binding {
 // key.Map interface.
 func (k keyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Up, k.Down},
+		{k.Up, k.Down, k.NewTask},
 		{k.Space, k.Done, k.Undo, k.Next},
 		{k.Filter, k.Left, k.Right, k.Delete},
 		{k.AcceptSuggestion, k.NextSuggestion, k.PrevSuggestion},
