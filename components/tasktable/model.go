@@ -179,12 +179,12 @@ func (m Model) getRows() [][]string {
 			t := r.FieldByName(fieldname).Type().Kind()
 			var s string
 			switch t {
-			case reflect.String:
-				s = r.FieldByName(fieldname).String()
 			case reflect.Slice:
 				for i := 0; i < r.FieldByName(fieldname).Len(); i++ {
 					s += r.FieldByName(fieldname).Index(i).String() + " "
 				}
+			default:
+				s = r.FieldByName(fieldname).String()
 			}
 
 			row[i] = s

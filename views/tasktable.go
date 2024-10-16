@@ -98,6 +98,7 @@ func (m TasktableView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				utils.BlockCommentLine = false
 			}
 		}
+		return m, cmd
 	}
 	m.tasktable, cmd = m.tasktable.Update(msg)
 	switch msg := msg.(type) {
