@@ -15,23 +15,24 @@ import (
 )
 
 type Model struct {
-	table      table.Table
-	columns    []string
-	rows       [][]string
-	activeRows []int
-	nextRows   []int
-	tw         *tw.TaskWarrior
-	cursor     int
-	width      int
+	table          table.Table
+	columns        []string
+	expandedColumn int
+	rows           [][]string
+	activeRows     []int
+	nextRows       []int
+	tw             *tw.TaskWarrior
+	cursor         int
+	width          int
 }
 
-func InitModel(tw *tw.TaskWarrior, columns []string) Model {
+func InitModel(tw *tw.TaskWarrior, columns []string, expandedColumn int) Model {
 	t := table.New().
 		Border(lipgloss.NormalBorder()).
 		BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("99"))).
 		BorderTop(true).BorderBottom(true).BorderLeft(true).BorderRight(true).BorderColumn(false).
 		Headers(utils.SpaceAround(columns)...)
-	m := Model{tw: tw, table: *t, cursor: 0, columns: columns}
+	m := Model{tw: tw, table: *t, cursor: 0, columns: columns, expandedColumn: expandedColumn, width: 100}
 	rows := m.getRows()
 	m.table.Rows(rows...)
 	return m
@@ -39,7 +40,7 @@ func InitModel(tw *tw.TaskWarrior, columns []string) Model {
 
 func (m Model) Init() tea.Cmd { return nil }
 
-func autoSpace(cols []string, width int, expandingCol int) []string {
+func autoSpace(cols []string, width int, expandedColumn int) []string {
 	result := make([]string, len(cols))
 	var totalWidth int
 	for i, col := range cols {
@@ -53,7 +54,7 @@ func autoSpace(cols []string, width int, expandingCol int) []string {
 	for i := 0; i < width-totalWidth-10; i++ {
 		space += " "
 	}
-	result[expandingCol] = " " + cols[expandingCol] + space
+	result[expandedColumn] = " " + cols[expandedColumn] + space
 	return result
 }
 
@@ -64,7 +65,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.table.
 			Width(m.width).
-			Headers(autoSpace(m.columns, m.width, 3)...)
+			Headers(autoSpace(m.columns, m.width, m.expandedColumn)...)
 	case tea.KeyMsg:
 		var err error = nil
 		switch {

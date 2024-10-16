@@ -37,9 +37,9 @@ var inactiveStyle = lipgloss.NewStyle().
 	BorderStyle(lipgloss.NormalBorder()).
 	BorderForeground(lipgloss.Color("24"))
 
-func InitTasktableView(tw *tw.TaskWarrior, columns []string) TasktableView {
+func InitTasktableView(tw *tw.TaskWarrior, columns []string, expandedColumn int) TasktableView {
 	// table
-	tasktable := tasktable.InitModel(tw, columns)
+	tasktable := tasktable.InitModel(tw, columns, expandedColumn)
 	// filter
 	filterInput := textinput.New()
 	filterInput.Placeholder = "add filter like: 'project:work'"
@@ -69,7 +69,7 @@ func (m TasktableView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg := msg.(type) {
 		case tea.KeyMsg:
 			switch {
-			case msg.String() == "esc" || key.Matches(msg, keymap.KeyMap.Filter):
+			case msg.String() == "esc":
 				m.filterInput.Blur()
 				m.state = none
 				utils.BlockCommentLine = false
@@ -98,7 +98,6 @@ func (m TasktableView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				utils.BlockCommentLine = false
 			}
 		}
-		return m, cmd
 	}
 	m.tasktable, cmd = m.tasktable.Update(msg)
 	switch msg := msg.(type) {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path"
 	"strings"
 
 	"github.com/Piitschy/twaskwarrior-tui/internal/tw"
@@ -14,6 +15,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/spf13/viper"
 )
 
 type sessionState int
@@ -34,8 +36,8 @@ type MainModel struct {
 	height        int
 }
 
-func InitModel(tw *tw.TaskWarrior, columns []string) MainModel {
-	tasktableView := views.InitTasktableView(tw, columns)
+func InitModel(tw *tw.TaskWarrior, columns []string, expandedColumn int) MainModel {
+	tasktableView := views.InitTasktableView(tw, columns, expandedColumn)
 	cl := textinput.New()
 	cl.Placeholder = "Enter taskwarrior command here..."
 	suggestions := utils.AddProjectSuggestions(utils.Suggestions, tw.GetProjects())
@@ -110,16 +112,50 @@ func (m MainModel) View() string {
 }
 
 func main() {
+	configFolderPath := path.Join(os.Getenv("HOME"), ".config")
+	viper.SetConfigName("taskwarrior-tui")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(configFolderPath)
+	viper.SetDefault("filter", []string{"status:pending"})
+	viper.SetDefault("columns", []string{"ID", "Project", "Tags", "Description", "Status"})
+	viper.SetDefault("expanded-col", 3)
+	err := viper.ReadInConfig()
+	if err != nil {
+		viper.SafeWriteConfig()
+	}
+
 	tw, err := tw.NewTaskWarrior()
 	if err != nil {
 		panic(err)
 	}
 
-	tw.AddFilter("status", "pending")
+	tw.OnFilterChange = func() {}
 
-	columns := []string{"ID", "Project", "Tags", "Description", "Status"}
+	filterStrings := viper.GetStringSlice("filter")
+	if len(filterStrings) > 0 {
+		for _, f := range filterStrings {
+			tw.AddFilterFromString(f)
+		}
+	}
 
-	m := InitModel(tw, columns)
+	tw.OnFilterChange = func() {
+		fs := tw.GetFilters()
+		newFilterStrings := make([]string, len(fs))
+		for i, f := range fs {
+			newFilterStrings[i] = f.String()
+		}
+		viper.Set("filter", newFilterStrings)
+		viper.WriteConfig()
+	}
+
+	// } else {
+	// 	tw.AddFilter("status", "pending")
+	// }
+
+	columns := viper.GetStringSlice("columns")
+	expandedColumn := viper.GetInt("expanded-col")
+
+	m := InitModel(tw, columns, expandedColumn)
 	if _, err := tea.NewProgram(m, tea.WithAltScreen()).Run(); err != nil {
 		fmt.Println("Error running program:", err)
 		os.Exit(1)

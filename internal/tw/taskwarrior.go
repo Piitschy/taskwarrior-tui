@@ -9,8 +9,9 @@ import (
 
 type TaskWarrior struct {
 	Tasks
-	Context string
-	filter  Filters
+	Context        string
+	filter         Filters
+	OnFilterChange func()
 }
 
 func NewTaskWarrior() (*TaskWarrior, error) {
@@ -50,14 +51,18 @@ func (tw *TaskWarrior) GetFilters() Filters {
 
 func (tw *TaskWarrior) SetFilter(f Filters) {
 	tw.filter = f
+	tw.OnFilterChange()
 }
 
 func (tw *TaskWarrior) AddFilter(key, value string) {
 	tw.filter.AddFilter(key, value)
+	tw.OnFilterChange()
 }
 
 func (tw *TaskWarrior) AddFilterFromString(filterString string) error {
-	return tw.filter.AddFilterFromString(filterString)
+	err := tw.filter.AddFilterFromString(filterString)
+	tw.OnFilterChange()
+	return err
 }
 
 func (tw *TaskWarrior) ToggleDisableFilter(f Filter) {
@@ -66,6 +71,7 @@ func (tw *TaskWarrior) ToggleDisableFilter(f Filter) {
 			tw.filter[i].Disabled = !tw.filter[i].Disabled
 		}
 	}
+	tw.OnFilterChange()
 }
 
 func (tw *TaskWarrior) RemoveFilter(f Filter) {
@@ -76,6 +82,7 @@ func (tw *TaskWarrior) RemoveFilter(f Filter) {
 		}
 	}
 	tw.filter = newFilters
+	tw.OnFilterChange()
 }
 
 func (tw *TaskWarrior) GetProjects() []string {
