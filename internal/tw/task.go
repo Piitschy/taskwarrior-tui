@@ -62,8 +62,14 @@ func (t Tasks) Filter(f Filter) Tasks {
 	var tasks Tasks
 	for _, task := range t {
 		for key, value := range structs.Map(task) {
-			if l(key) == l(f.key) && l(value.(string)) == l(f.value) {
-				tasks = append(tasks, task)
+			if strings.Contains(f.key, ".not") {
+				if l(key) == l(strings.ReplaceAll(f.key, ".not", "")) && l(value.(string)) != l(f.value) {
+					tasks = append(tasks, task)
+				}
+			} else {
+				if l(key) == l(f.key) && l(value.(string)) == l(f.value) {
+					tasks = append(tasks, task)
+				}
 			}
 		}
 	}

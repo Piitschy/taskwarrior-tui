@@ -110,10 +110,9 @@ func (tw *TaskWarrior) GetFilteredTasks() Tasks {
 		return tasks
 	}
 	for _, filter := range tw.filter {
-		if filter.Disabled {
-			continue
+		if !filter.Disabled {
+			tasks = tasks.Filter(filter)
 		}
-		tasks = tasks.Filter(filter)
 	}
 	return tasks
 }
