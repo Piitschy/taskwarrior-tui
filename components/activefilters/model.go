@@ -39,6 +39,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, keymap.KeyMap.Delete):
 			selectedFilter := m.tw.GetFilters()[m.cursor]
 			m.tw.RemoveFilter(selectedFilter)
+			m.cursor--
 		}
 	}
 	return m, cmd

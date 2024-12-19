@@ -83,6 +83,8 @@ func (m MainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.commandline.Blur()
 				m.activeCommand = false
 				m.commandline.SetValue("")
+				m.tw.LoadTasks()
+				m.tasktable, cmd = m.tasktable.Update(msg)
 			}
 			m.commandline, cmd = m.commandline.Update(msg)
 			return m, cmd

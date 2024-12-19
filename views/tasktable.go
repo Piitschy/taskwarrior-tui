@@ -46,6 +46,7 @@ func InitTasktableView(tw *tw.TaskWarrior, columns []string, expandedColumn int)
 	filterInput.ShowSuggestions = true
 	filterInput.KeyMap.AcceptSuggestion = keymap.KeyMap.AcceptSuggestion
 	filterInput.SetSuggestions(utils.ProjectSuggestions(tw.GetProjects()))
+
 	// help
 	return TasktableView{
 		state:       none,
@@ -80,6 +81,8 @@ func (m TasktableView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.filterInput.Blur()
 					m.state = none
 					utils.BlockCommentLine = false
+					m.tw.LoadTasks()
+					m.tasktable, cmd = m.tasktable.Update(msg)
 				}
 			}
 		}
@@ -97,6 +100,8 @@ func (m TasktableView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.state = none
 				utils.BlockCommentLine = false
 			}
+			m.tw.LoadTasks()
+			m.tasktable, cmd = m.tasktable.Update(msg)
 		}
 		return m, cmd
 	}
